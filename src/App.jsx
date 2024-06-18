@@ -1,5 +1,5 @@
 import React from "react";
-import Navbar from "./components/Navibar/Navbar";
+import Navbar from "./components/Navbar/Navbar";
 import Rotas from "./rotas";
 
 function App() {
