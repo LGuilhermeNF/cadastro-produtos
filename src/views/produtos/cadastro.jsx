@@ -1,5 +1,7 @@
 import React from "react";
 import { ProdutoService } from "../../app/produtoService";
+import { withRouter } from 'react-router-dom';
+
 
 const estadoInicial = {
     nome: '',
@@ -7,10 +9,11 @@ const estadoInicial = {
     descricao: '',
     preco: 0,
     fornecedor: '',
-    sucesso: false
+    sucesso: false,
+    errors: []
 }
 
-export class CadastroProduto extends React.Component {
+class CadastroProduto extends React.Component {
   
   state = estadoInicial;
 
@@ -27,11 +30,32 @@ export class CadastroProduto extends React.Component {
       preco: this.state.preco,
       fornecedor: this.state.fornecedor
     }
-    this.service.salvar(produto);
-    this.limpaCampos();
-    this.setState({sucesso: true})
-    
+
+    try{
+      this.service.salvar(produto);
+      this.limpaCampos();
+      this.setState({sucesso: true})
+    }
+    catch(erro) {
+      const errors = erro.errors
+      this.setState({errors : errors});
+    }
   }
+
+  componentDidMount() {
+    // console.log(this.props.match);
+    
+    const sku = this.props.match.params.sku
+
+    if(sku){
+        const resultado = this.service.obterProdutos().filter( produto => produto.sku === sku )
+
+        if(resultado.length === 1){
+            const produtoEncontrado = resultado[0]
+            this.setState({ ...produtoEncontrado, atualizar: true })
+        }
+    }
+}
 
   limpaCampos = () => {
     this.setState(estadoInicial);
@@ -50,6 +74,18 @@ export class CadastroProduto extends React.Component {
                 <strong>Sucesso!</strong> Produto cadastrado.
               </div>
             )
+          }
+          
+          {this.state.errors.length > 0 &&
+            this.state.errors.map(
+              msg => {
+                return(
+                  <div class="alert alert-dismissible alert-danger">
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <strong>Error!</strong> {msg}
+                  </div>
+                )
+              })
           }
 
           <div className="row mb-3">
@@ -131,3 +167,5 @@ export class CadastroProduto extends React.Component {
     );
   }
 }
+
+export default withRouter(CadastroProduto);
